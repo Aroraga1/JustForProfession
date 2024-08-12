@@ -4,7 +4,14 @@ const userSchema = mongoose.Schema({
     username:{
         type:String,
         unique:true,
-        required:true,
+        // required:true,
+        lowercase:true,
+        trim:true,
+        index:true
+    },fullname:{
+        type:String,
+        unique:true,
+        // required:true,
         lowercase:true,
         trim:true,
         index:true
@@ -12,13 +19,13 @@ const userSchema = mongoose.Schema({
     email:{
         type:String,
         unique:true,
-        required:true,
+        // required:true,
         lowercase:true,
         trim:true,
     },
     avtar:{
         type:String,
-        required:true,
+        // required:true,
     },
     coverImage:{
         type:String
@@ -31,7 +38,7 @@ const userSchema = mongoose.Schema({
     ],
     password:{
         type:String,
-        required:[true,'Password is required']
+        // required:[true,'Password is required']
     },
     refrshToken:{
         type:String
@@ -40,7 +47,7 @@ const userSchema = mongoose.Schema({
 
 userSchema.pre("save", async function (next) {
     if(!this.isModified("password")) next();
-    this.password = bcrypt.hash(this.password,10)
+    this.password = await bcrypt.hash(this.password,10)
     next()
 })
 
