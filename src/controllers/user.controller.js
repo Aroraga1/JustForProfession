@@ -23,39 +23,46 @@ const registerUser = asyncHandler( async (req,res)=>{
         throw new ApiError(409,"this user already exists")
     }
 
-    const avtarLocalPath = req.files?.avtar[0]?.path;
-    const CoverImgLocalPath = req.files?.coverImage[0]?.path;
-
-    if(!avtarLocalPath){
-        throw new ApiError(409,"Avtar is required")
+    let avtarLocalPath;
+    if(req.files && Array.isArray(req.files.avtar) && req.files.avtar.length>0){
+        avtarLocalPath = req.files.avtar[0].path;
     }
 
-    const avtar = await uploadOnCloudinary(avtarLocalPath);
-    const CoverImg = await uploadOnCloudinary(CoverImgLocalPath);
+        if(!avtarLocalPath || avtarLocalPath===null){
+            throw new ApiError(409,"Avtar is required")
+        }
 
-    if(!avtar){
+    const avatar = await uploadOnCloudinary(avtarLocalPath);
+
+    if(!avatar){
         throw new ApiError(409,"Avatar is required")
     }
 
+    let CoverImgLocalPath;
+    if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length>0){
+        CoverImgLocalPath = req.files.coverImage[0].path;
+    }
+    const CoverImg = await uploadOnCloudinary(CoverImgLocalPath);
+
     const user = await User.create({
         fullname,
-        avtar:avtar.url,
-        coverImage:CoverImg?.url||"",
+        avtar:avatar.url,
+        coverImage:CoverImg?.url||null,
         email,
         password,
         username:username.toLowerCase()
     })
 
-    const createdUser = await user.findById(user._id).select(
-        "-password -refrshToken"
-    )
+    // const createdUser = await user.findById(user._id).select(
+    //     "-password -refrshToken"
+    // )
 
-    if(!createdUser){
-        throw new ApiError(500,"Something went wrong while registering")
-    }
+    // if(!createdUser){
+    //     throw new ApiError(500,"Something went wrong while registering")
+    // }
 
     res.status(201).json(
-        new ApiResponse(200,createdUser,"user created successfully11`   1")
+        new ApiResponse(200,"user created successfully")
     )
 })
 

@@ -1,17 +1,17 @@
 import mongoose,{Schema} from "mongoose";
-
+import bcrypt from "bcrypt";
 const userSchema = mongoose.Schema({
     username:{
         type:String,
         unique:true,
-        // required:true,
+        required:true,
         lowercase:true,
         trim:true,
         index:true
     },fullname:{
         type:String,
         unique:true,
-        // required:true,
+        required:true,
         lowercase:true,
         trim:true,
         index:true
@@ -19,13 +19,13 @@ const userSchema = mongoose.Schema({
     email:{
         type:String,
         unique:true,
-        // required:true,
+        required:true,
         lowercase:true,
         trim:true,
     },
     avtar:{
         type:String,
-        // required:true,
+        required:true,
     },
     coverImage:{
         type:String
@@ -46,10 +46,17 @@ const userSchema = mongoose.Schema({
 },{timestamps:true})
 
 userSchema.pre("save", async function (next) {
-    if(!this.isModified("password")) next();
-    this.password = await bcrypt.hash(this.password,10)
-    next()
-})
+    try {
+        if (!this.isModified("password")) {
+            return next();
+        }
+        this.password = await bcrypt.hash(this.password, 10);
+        next();
+    } catch (err) {
+        next(err); // Pass the error to the next middleware
+    }
+});
+
 
 userSchema.methods.isPasswordCorrect = async function(password){
     return await bcrypt.compare(password,this.password)
